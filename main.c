@@ -27,6 +27,8 @@ void change_info_staff(int accid);
 void changepassword(int idnum);
 int readpass_idnum();
 void update_passkeys(int maxdata);
+void changepassword_staff(int userid);
+void changebalance(int n);
 
 
 typedef struct DateOfBirth{
@@ -84,6 +86,7 @@ int home(){
     printf("\t\t--------------------------------------------------------------------------------------------------\n");
 
     do{
+        fflush(stdin);
         printf("\n\t\tPlease enter a valid option: ");
         scanf(" %d", &option);
     }while(option<1 || option >5);
@@ -123,7 +126,7 @@ void login(){
     scanf("NB%u", &userid);
     int max = readdata_idnum();
     for(int i=0; i<max; i++){
-        
+
         if(userid == A[i].id){
             flag = 1;
             id = A[i].id;
@@ -137,7 +140,6 @@ void login(){
         readpass(id);
     }
     else{
-        printf("%d", id);
         printf("\n\t\tUser does not exist. Create an account first.");
         getch();
         home();
@@ -149,7 +151,7 @@ void login(){
 void create_main(){
     FILE *datafp;
     header();
-    acc S; 
+    acc S;
 
     datafp = fopen("data.txt", "a+");
 
@@ -157,13 +159,13 @@ void create_main(){
         datafp = fopen("data.txt", "w+");
         S.id = 0;
     }
-    
+
     S.id = readdata_idnum() + 1;
-    
+
     printf("\n\t\tEnter your Citizenship ID:");
 
     scanf(" %lld", &S.ctzn);
-    
+
     for(unsigned int i=0; i<S.id; i++){
         if(S.ctzn == A[i].ctzn){
             printf("\t\tAn account with this Citizenship ID is already created!");
@@ -176,7 +178,7 @@ void create_main(){
     printf("\n\t\tEnter your full name: ");
     getchar();
     gets(S.name);}while(strlen(S.name)<1);
-    
+    strupr(S.name);
 
     do{printf("\n\t\tEnter your sex (M or m for Male F or f for Female): ");
     scanf(" %c", &S.sex);
@@ -188,7 +190,7 @@ void create_main(){
 
 
     printf("\n\t\tEnter your Date of birth in specified format:\n");
-    
+
     do{getchar();
     printf("\n\t\tEnter Date(Eg. 01 or 31): ");
     scanf(" %u", &S.dob.day);
@@ -206,7 +208,7 @@ void create_main(){
     }
     }while(S.dob.month > 12 || S.dob.month<1);
 
-    
+
     do{printf("\n\t\tEnter Year(Eg. 2002): ");
     scanf(" %u", &S.dob.year);
     if(S.dob.year < 1900 || S.dob.year > 2004){
@@ -231,7 +233,7 @@ void create_main(){
             break;
             }
     }while(1 || strlen(S.phonenum) != 10);
-    
+
 
     do{printf("\n\t\tPlease enter deposit amount (Must be greater than 1000): ");
     scanf(" %lf", &S.dep_amt);
@@ -267,15 +269,15 @@ void staff(){
         fprintf(spwfp, "staff:%s", staffp);
         fclose(spwfp);
         staff();
-    } 
+    }
 
     spwfp = fopen("staffp.txt", "r");
     fscanf(spwfp, "staff:%s", staffp);
 
     printf("\t\tEnter the password to get access: ");
-    getchar();
+    fflush(stdin);
     gets(userstaffp);
-    
+
     if(strcmp(staffp, userstaffp)!=0){
             printf("\t\tThe provided password is incorrect.");
             getch();
@@ -294,7 +296,7 @@ void contact(){
     printf("\n\n\t\t\t\t\t--------------------------------\t\t\t\t\t\n");
     printf("\t\t\t\t\t|       Anish Kumar Neupane    |\t\t\t\t\t\n");
     printf("\t\t\t\t\t--------------------------------\t\t\t\t\t\n");
-    printf("\t\t\t\t\t--------------------------------\t\t\t\t\t\n");
+    printf("\t\t\t\t\t|         Prayojan Puri        |\t\t\t\t\t\n");
     printf("\t\t\t\t\t--------------------------------\t\t\t\t\t\n");
     printf("\n\n\n\n\t\tEnter any key to return...");
     getch();
@@ -308,7 +310,7 @@ int readdata_idnum(){
     FILE *readdatafp;
 
     readdatafp = fopen("data.txt", "r");
-    
+
     if(readdatafp==NULL){
         printf("\t\tNo account created yet!");
         return 0;
@@ -317,7 +319,7 @@ int readdata_idnum(){
     while(fscanf(readdatafp, "%u:%[^`]`%lld`%c`%u`%u`%u`%[^`]`%lf\n", &A[i].id, A[i].name, &A[i].ctzn, &A[i].sex, &A[i].dob.day, &A[i].dob.month, &A[i].dob.year, A[i].phonenum, &A[i].dep_amt) != EOF){
         i++;
     }
-    
+
 
     fclose(readdatafp);
     return i;
@@ -328,7 +330,7 @@ int readpass_idnum(){
     FILE *readpassfp;
 
     readpassfp = fopen("passwords.txt", "r");
-    
+
     if(readpassfp==NULL){
         printf("\t\tNo account created yet!");
         return 0;
@@ -337,7 +339,7 @@ int readpass_idnum(){
     while(fscanf(readpassfp, "NB%u:%[^\n]\n", &P[i].nbid, P[i].passkey) != EOF){
         i++;
     }
-    
+
 
     fclose(readpassfp);
     return i;
@@ -355,11 +357,11 @@ void createpass(acc Spass){
 
     if(pwfp==NULL){
         pwfp = fopen("passwords.txt", "w+");
-    }    
+    }
 
-    printf("\n\n\t\tYour userid for this Account is: NB%u.\n", P.nbid);    
+    printf("\n\n\t\tYour userid for this Account is: NB%u.\n", P.nbid);
     printf("\n\n\t\tPlease note that your user ID for this account will be required for any future transactions.");
-    
+
     char password[33] = {};
     do {
         printf("\n\n\t\tCreate a password for the account NB%u (8-32 letters): ", P.nbid);
@@ -384,7 +386,7 @@ void createpass(acc Spass){
 
 
 void header(){
-    system("cls");    
+    system("cls");
     printf("\t\t\t\t\t\t  The NCIT Bank!\t\t\t\t\t\n");
     printf("\t\t\t\t\t\t<---------------->\t\t\t\t\t\n");
 }
@@ -392,7 +394,8 @@ void header(){
 
 void staffopt(){
     header();
-    
+    char staffp[33];
+    FILE *spwfp;
     int option1=0;
 
     printf("\n\t\t1. Sort all Accounts by ID");
@@ -419,6 +422,12 @@ void staffopt(){
             break;
 
         case 4:
+            spwfp = fopen("staffp.txt", "w+");
+            fflush(stdin);
+            printf("\t\tCreate a staff Password: ");
+            fgets(staffp, 33, stdin);
+            fprintf(spwfp, "staff:%s", staffp);
+            fclose(spwfp);
             break;
 
         case 5:
@@ -472,9 +481,9 @@ void viewnamesorted(){
 }
 
 void readpass(int accid){
-    
+
     char passwordinp[33] = {};
-    
+
     do {
         scanf("%32s", passwordinp);
 
@@ -498,6 +507,7 @@ void readpass(int accid){
                 logged_in(accid-1);
             }
             else{
+                fflush(stdin);
                 printf("\n\t\tWrong Password! Try Again? Y/y or N/n: ");
                 char try;
                 scanf("%c", &try);
@@ -517,7 +527,7 @@ void readpass(int accid){
 
 void logged_in(int account_id){
     header();
-    double deposit=0, withdraw =0; 
+    double deposit=0, withdraw =0;
     int option1=0;
     int max = readdata_idnum();
 
@@ -582,7 +592,7 @@ void logged_in(int account_id){
 }
 
 void check_details(int account_number){
-    
+
     header();
     printf("\t\tYour Account Details are shown below:\n\n");
     printf("\t\tCitizenship ID: %lld\n", A[account_number].ctzn);
@@ -602,7 +612,7 @@ void change_info(int accid){
     long long int CTZN;
     char Sex;
     unsigned int Day, Month, Year;
-    
+
 
     header();
     printf("\n\t\tWhat information would you like to change?");
@@ -626,12 +636,13 @@ void change_info(int accid){
             printf("\t\tUpdate your full name:\t");
             gets(Name1);
         }while(strlen(Name1)<1);
+        strupr(Name1);
         strcpy(A[accid].name, Name1);
         update_info(max);
         printf("\t\tName has been updated successfully!");
         getch();
         break;
-    
+
     case 2:
         header();
         printf("\t\tUpdate the Citizenship ID: ");
@@ -656,11 +667,11 @@ void change_info(int accid){
         printf("\t\tSex has been updated successfully!");
         getch();
         break;
-    
+
     case 4:
         header();
         printf("\n\t\tEnter your Date of birth in specified format:\n");
-    
+
         do{getchar();
         printf("\n\t\tEnter Date(Eg. 01 or 31): ");
         scanf(" %u", &Day);
@@ -680,7 +691,7 @@ void change_info(int accid){
         }while(Month > 12 || Month<1);
         A[accid].dob.month = Month;
 
-        
+
         do{printf("\n\t\tEnter Year(Eg. 2002): ");
         scanf(" %u", &Year);
         if(Year < 1900 || Year > 2004){
@@ -748,7 +759,7 @@ void editaccdetails(){
     }while(changeacc>max);
 
     header();
-    printf("\n\t\tWhat would you like to make changes to?\n\t\t1. Personal Information\n\t\t2.Password\n\t\t3.Balance\n\t\t4.Return\n\t\t");
+    printf("\n\t\tWhat would you like to make changes to?\n\t\t1. Personal Information\n\t\t2. Password\n\t\t3. Balance\n\t\t4. Return\n\t\t");
 
     do{
         scanf(" %d", &options);
@@ -757,22 +768,23 @@ void editaccdetails(){
     switch (options)
     {
     case 1:
-        change_info_staff(changeacc);
+        change_info_staff(changeacc-1);
         break;
-    
-    case 2:
 
+    case 2:
+        changepassword_staff(changeacc-1);
         break;
 
     case 3:
-
+        changebalance(changeacc-1);
         break;
 
     case 4:
-        editaccdetails();
+        staffopt();
+        break;
     }
-    
-    editaccdetails();
+
+    staffopt();
 
 }
 
@@ -783,7 +795,7 @@ void change_info_staff(int accid){
     long long int CTZN;
     char Sex;
     unsigned int Day, Month, Year;
-    
+
 
     header();
     printf("\n\t\tWhat information would you like to change?");
@@ -801,18 +813,20 @@ void change_info_staff(int accid){
     switch (option2)
     {
     case 1:
+
         header();
         do{
             getchar();
             printf("\t\tProvide the full name:\t");
             gets(Name1);
         }while(strlen(Name1)<1);
+        strupr(Name1);
         strcpy(A[accid].name, Name1);
         update_info(max);
         printf("\n\t\tThe name has been updated!");
         getch();
         break;
-    
+
     case 2:
         header();
         printf("\t\tProvide the Citizenship ID: ");
@@ -836,11 +850,11 @@ void change_info_staff(int accid){
         update_info(max);
         printf("\n\t\tThe sex has been updated!");
         break;
-    
+
     case 4:
         header();
         printf("\n\t\tProvide the Date of birth in specified format:\n");
-    
+
         do{getchar();
         printf("\n\t\tEnter Date(Eg. 01 or 31): ");
         scanf(" %u", &Day);
@@ -860,7 +874,7 @@ void change_info_staff(int accid){
         }while(Month > 12 || Month<1);
         A[accid].dob.month = Month;
 
-        
+
         do{printf("\n\t\tEnter Year(Eg. 2002): ");
         scanf(" %u", &Year);
         if(Year < 1900 || Year > 2004){
@@ -957,7 +971,7 @@ void changepassword_staff(int userid){
     getchar();
     do {
         printf("\n\t\tProvide the new password: ");
-        scanf("%32s", newpass);
+        fgets(newpass, 32, stdin);
         int i = 0;
         while(newpass[i] != '\0') {
             if(isspace(newpass[i])) {
@@ -973,4 +987,14 @@ void changepassword_staff(int userid){
     strcpy(P[userid].passkey, newpass);
     update_passkeys(max);
 
+}
+
+void changebalance(int n){
+    double balance;
+    int max = readdata_idnum();
+    printf("\n\t\tEnter the new Balance:\t");
+    scanf("%lf", &balance);
+    A[n].dep_amt = balance;
+    update_info(max);
+    printf("\n\t\tAmount has been deposited successfully!");
 }
